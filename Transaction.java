@@ -1,20 +1,18 @@
-import java.time.LocalDate;
-
 public class Transaction {
-    private final String txnId;
+    private final String date;
     private final String type;
     private final double amount;
-    private final LocalDate date;
+    private final String txnId;
 
-    public Transaction(String type, double amount, String txnId) {
-        this.txnId = txnId;
+    public Transaction(String date, String type, double amount, String txnId) {
+        this.date = date;
         this.type = type;
         this.amount = amount;
-        this.date = LocalDate.now();
+        this.txnId = txnId;
     }
 
-    public String getTxnId() {
-        return txnId;
+    public String getDate() {
+        return date;
     }
 
     public String getType() {
@@ -25,7 +23,7 @@ public class Transaction {
         return amount;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public String getTxnId() {
+        return txnId;
     }
 }
