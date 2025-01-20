@@ -36,7 +36,7 @@ public class Main {
     }
 
     private static void handleTransactionInput(BankingSystem bankingSystem, Scanner scanner) {
-        System.out.println("Please enter transaction details in <Date> <Account> <Type> <Amount> format");
+        System.out.println("Please enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print("> ");
@@ -49,6 +49,7 @@ public class Main {
                 continue;
             }
 
+            String date = parts[0];
             String accountId = parts[1];
             String type = parts[2];
             double amount;
@@ -60,8 +61,9 @@ public class Main {
                 continue;
             }
 
-            if (bankingSystem.addTransaction(accountId, type, amount)) {
+            if (bankingSystem.addTransaction(accountId, date, type, amount)) {
                 System.out.println("Transaction added successfully.");
+                printStatement(bankingSystem.getAccount(accountId));
             } else {
                 System.out.println("Transaction failed. Insufficient balance or invalid type.");
             }
@@ -112,7 +114,6 @@ public class Main {
             }
 
             String accountId = parts[0];
-            String yearMonth = parts[1];
             BankAccount account = bankingSystem.getAccount(accountId);
 
             if (account == null) {
@@ -120,13 +121,16 @@ public class Main {
                 continue;
             }
 
-            System.out.println("Account: " + accountId);
-            System.out.println("| Date     | Txn Id      | Type | Amount |");
-            for (Transaction txn : account.getTransactions()) {
-                System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
-                        txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount());
-            }
+            printStatement(account);
+        }
+    }
+
+    private static void printStatement(BankAccount account) {
+        System.out.println("Account: " + account.getAccountId());
+        System.out.println("| Date     | Txn Id      | Type | Amount |");
+        for (Transaction txn : account.getTransactions()) {
+            System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
+                    txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount());
         }
     }
 }
-
