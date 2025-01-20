@@ -12,19 +12,18 @@ public class BankingSystem {
         transactionCounter = new HashMap<>();
     }
 
-    public boolean addTransaction(String accountId, String type, double amount) {
+    public boolean addTransaction(String accountId, String date, String type, double amount) {
         accounts.putIfAbsent(accountId, new BankAccount(accountId));
         BankAccount account = accounts.get(accountId);
 
-        String txnId = generateTransactionId(accountId);
-        return account.addTransaction(new Transaction(type, amount, txnId));
+        String txnId = generateTransactionId(accountId, date);
+        return account.addTransaction(new Transaction(date, type, amount, txnId));
     }
 
-    private String generateTransactionId(String accountId) {
-        LocalDate date = LocalDate.now();
+    private String generateTransactionId(String accountId, String date) {
         int counter = transactionCounter.getOrDefault(accountId, 0) + 1;
         transactionCounter.put(accountId, counter);
-        return String.format("%s-%02d", date.toString().replaceAll("-", ""), counter);
+        return String.format("%s-%02d", date, counter);
     }
 
     public void addInterestRule(String ruleId, LocalDate date, double rate) {
@@ -34,9 +33,4 @@ public class BankingSystem {
     public BankAccount getAccount(String accountId) {
         return accounts.get(accountId);
     }
-
-    public List<InterestRule> getInterestRules() {
-        return interestRules;
-    }
 }
-
