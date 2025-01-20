@@ -1,5 +1,5 @@
 import java.time.LocalDate;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -7,13 +7,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("Welcome to AwesomeGIC Bank! What would you like to do?");
-            System.out.println("[T] Input transactions");
-            System.out.println("[I] Define interest rules");
-            System.out.println("[P] Print statement");
-            System.out.println("[Q] Quit");
-            System.out.print("> ");
-
+            printMainMenu();
             String choice = scanner.nextLine().trim().toLowerCase();
             switch (choice) {
                 case "t":
@@ -35,8 +29,17 @@ public class Main {
         }
     }
 
+    private static void printMainMenu() {
+        System.out.println("\nWelcome to AwesomeGIC Bank! What would you like to do?");
+        System.out.println("[T] Input transactions");
+        System.out.println("[I] Define interest rules");
+        System.out.println("[P] Print statement");
+        System.out.println("[Q] Quit");
+        System.out.print("> ");
+    }
+
     private static void handleTransactionInput(BankingSystem bankingSystem, Scanner scanner) {
-        System.out.println("Please enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
+        System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print("> ");
@@ -71,7 +74,7 @@ public class Main {
     }
 
     private static void handleInterestRuleInput(BankingSystem bankingSystem, Scanner scanner) {
-        System.out.println("Please enter interest rules details in <Date> <RuleId> <Rate in %> format");
+        System.out.println("\nPlease enter interest rules details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print("> ");
@@ -94,13 +97,18 @@ public class Main {
                 continue;
             }
 
-            bankingSystem.addInterestRule(ruleId, LocalDate.parse(parts[0]), rate);
-            System.out.println("Interest rule added successfully.");
+            try {
+                LocalDate date = LocalDate.parse(parts[0]);
+                bankingSystem.addInterestRule(ruleId, date, rate);
+                System.out.println("Interest rule added successfully.");
+            } catch (Exception e) {
+                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+            }
         }
     }
 
     private static void handlePrintStatement(BankingSystem bankingSystem, Scanner scanner) {
-        System.out.println("Please enter account and month to generate the statement <Account> <Year><Month>");
+        System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
         System.out.println("(or enter blank to go back to main menu):");
         while (true) {
             System.out.print("> ");
@@ -122,11 +130,14 @@ public class Main {
             }
 
             printStatement(account);
+            System.out.println(); // Add a line break for better readability
+            printMainMenu();
+            return; // After printing, return to main menu
         }
     }
 
     private static void printStatement(BankAccount account) {
-        System.out.println("Account: " + account.getAccountId());
+        System.out.println("\nAccount: " + account.getAccountId());
         System.out.println("| Date     | Txn Id      | Type | Amount |");
         for (Transaction txn : account.getTransactions()) {
             System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
