@@ -33,4 +33,8 @@ public class BankingSystem {
     public BankAccount getAccount(String accountId) {
         return accounts.get(accountId);
     }
+
+    public List<InterestRule> getInterestRules() {
+        return interestRules;
+    }
 }

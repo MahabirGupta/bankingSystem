@@ -2,7 +2,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BankingSystemTest {
@@ -10,9 +9,9 @@ public class BankingSystemTest {
     @Test
     void testAddTransaction() {
         BankingSystem bankingSystem = new BankingSystem();
-        assertTrue(bankingSystem.addTransaction("AC001", "D", 100));
-        assertFalse(bankingSystem.addTransaction("AC001", "W", 200));
-        assertTrue(bankingSystem.addTransaction("AC001", "W", 50));
+        assertTrue(bankingSystem.addTransaction("AC001", "20230101", "D", 100));
+        assertFalse(bankingSystem.addTransaction("AC001", "20230101", "W", 200));
+        assertTrue(bankingSystem.addTransaction("AC001", "20230101", "W", 50));
     }
 
     @Test
