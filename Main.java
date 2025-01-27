@@ -5,19 +5,26 @@ public class Main {
     public static void main(String[] args) {
         BankingSystem bankingSystem = new BankingSystem();
         Scanner scanner = new Scanner(System.in);
+        boolean showMainMenu = true;
+
 
         while (true) {
-            printMainMenu();
+            if (showMainMenu) {
+                printMainMenu();
+            }
             String choice = scanner.nextLine().trim().toLowerCase();
             switch (choice) {
                 case "t":
                     handleTransactionInput(bankingSystem, scanner);
+                    showMainMenu = false;
                     break;
                 case "i":
                     handleInterestRuleInput(bankingSystem, scanner);
+                    showMainMenu = false;
                     break;
                 case "p":
                     handlePrintStatement(bankingSystem, scanner);
+                    showMainMenu = false;
                     break;
                 case "q":
                     System.out.println("Thank you for banking with AwesomeGIC Bank.");
@@ -25,6 +32,7 @@ public class Main {
                     return;
                 default:
                     System.out.println("Invalid choice. Please try again.");
+                    showMainMenu = true;
             }
         }
     }
@@ -40,42 +48,72 @@ public class Main {
 
     private static void handleTransactionInput(BankingSystem bankingSystem, Scanner scanner) {
         System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
-        System.out.println("(or enter blank to go back to main menu):");
+        System.out.println("(or enter blank to go back to the main menu):");
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
-            if (input.isEmpty()) return;
+            if (input.isEmpty()) {
+                System.out.println("\nIs there anything else you'd like to do?");
+                printOptionMenu();
+                return;
+            }
 
             String[] parts = input.split("\\s+");
             if (parts.length != 4) {
                 System.out.println("Invalid input. Try again.");
+                System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
+                System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
             String date = parts[0];
             String accountId = parts[1];
-            String type = parts[2];
+            String type = parts[2].toUpperCase();
             double amount;
+
+            // Validate transaction type
+            if (!type.equals("D") && !type.equals("W")) {
+                System.out.println("Invalid transaction type. Use D for deposit or W for withdrawal.");
+                System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
+                System.out.println("(or enter blank to go back to the main menu):");
+                continue;
+            }
+
             try {
                 amount = Double.parseDouble(parts[3]);
                 if (amount <= 0) throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid amount. Try again.");
+                System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
+                System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
             if (bankingSystem.addTransaction(accountId, date, type, amount)) {
                 System.out.println("Transaction added successfully.");
                 printStatement(bankingSystem.getAccount(accountId));
+                System.out.println("\nIs there anything else you'd like to do?");
+                printOptionMenu();
+                return;
             } else {
-                System.out.println("Transaction failed. Insufficient balance or invalid type.");
+                System.out.println("Transaction failed. Insufficient balance or invalid input.");
+                System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
+                System.out.println("(or enter blank to go back to the main menu):");
             }
         }
     }
 
+    private static void printOptionMenu() {
+        System.out.println("[T] Input transactions");
+        System.out.println("[I] Define interest rules");
+        System.out.println("[P] Print statement");
+        System.out.println("[Q] Quit");
+        System.out.print("> ");
+    }
+
     private static void handleInterestRuleInput(BankingSystem bankingSystem, Scanner scanner) {
-        System.out.println("\nPlease enter interest rules details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
-        System.out.println("(or enter blank to go back to main menu):");
+        System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+        System.out.println("(or enter blank to go back to the main menu):");
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
@@ -84,6 +122,8 @@ public class Main {
             String[] parts = input.split("\\s+");
             if (parts.length != 3) {
                 System.out.println("Invalid input. Try again.");
+                System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+                System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
@@ -94,6 +134,8 @@ public class Main {
                 if (rate <= 0 || rate >= 100) throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid rate. Try again.");
+                System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+                System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
@@ -103,21 +145,29 @@ public class Main {
                 System.out.println("Interest rule added successfully.");
             } catch (Exception e) {
                 System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+                System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+                System.out.println("(or enter blank to go back to the main menu):");
             }
         }
     }
 
     private static void handlePrintStatement(BankingSystem bankingSystem, Scanner scanner) {
         System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
-        System.out.println("(or enter blank to go back to main menu):");
+        System.out.println("(or enter blank to go back to the main menu):");
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
-            if (input.isEmpty()) return;
+            if (input.isEmpty()) {
+                System.out.println("\nIs there anything else you'd like to do?");
+                printOptionMenu();
+                return;
+            }
 
             String[] parts = input.split("\\s+");
             if (parts.length != 2) {
                 System.out.println("Invalid input. Try again.");
+                System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
+                System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
@@ -130,9 +180,9 @@ public class Main {
             }
 
             printStatement(account);
-            System.out.println(); // Add a line break for better readability
-            printMainMenu();
-            return; // After printing, return to main menu
+            System.out.println("\nIs there anything else you'd like to do?");
+            printOptionMenu();
+            return;
         }
     }
 
