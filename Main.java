@@ -1,4 +1,6 @@
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class Main {
@@ -49,6 +51,7 @@ public class Main {
     private static void handleTransactionInput(BankingSystem bankingSystem, Scanner scanner) {
         System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
         System.out.println("(or enter blank to go back to the main menu):");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
@@ -66,10 +69,22 @@ public class Main {
                 continue;
             }
 
-            String date = parts[0];
+//            String date = parts[0];
+            String dateStr = parts[0];
             String accountId = parts[1];
             String type = parts[2].toUpperCase();
             double amount;
+
+            // Validate date format
+            LocalDate date;
+            try {
+                date = LocalDate.parse(dateStr, dateFormatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please use YYYYMMdd.");
+                System.out.println("\nPlease enter transaction details in <Date YYYYMMdd> <Account> <Type D or W> <Amount> format");
+                System.out.println("(or enter blank to go back to the main menu):");
+                continue;
+            }
 
             // Validate transaction type
             if (!type.equals("D") && !type.equals("W")) {
@@ -79,6 +94,7 @@ public class Main {
                 continue;
             }
 
+            // Validate amount
             try {
                 amount = Double.parseDouble(parts[3]);
                 if (amount <= 0) throw new NumberFormatException();
@@ -89,7 +105,8 @@ public class Main {
                 continue;
             }
 
-            if (bankingSystem.addTransaction(accountId, date, type, amount)) {
+            // Process transaction
+            if (bankingSystem.addTransaction(accountId, dateStr, type, amount)) {
                 System.out.println("Transaction added successfully.");
                 printStatement(bankingSystem.getAccount(accountId));
                 System.out.println("\nIs there anything else you'd like to do?");
