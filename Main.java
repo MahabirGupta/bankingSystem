@@ -137,7 +137,11 @@ public class Main {
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
-            if (input.isEmpty()) return;
+            if (input.isEmpty()) {
+                System.out.println("\nIs there anything else you'd like to do?");
+                printOptionMenu();
+                return;
+            }
 
             String[] parts = input.split("\\s+");
             if (parts.length != 3) {
@@ -151,7 +155,6 @@ public class Main {
             String ruleId = parts[1];
             double rate;
 
-            // Validate date format
             LocalDate date;
             try {
                 date = LocalDate.parse(dateStr, dateFormatter);
@@ -162,26 +165,44 @@ public class Main {
                 continue;
             }
 
-            // Validate interest rate
             try {
                 rate = Double.parseDouble(parts[2]);
-                if (rate <= 0 || rate >= 100) throw new NumberFormatException();
+                if (rate <= 0 || rate >= 100) {
+                    throw new NumberFormatException();
+                }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid rate. Try again.");
+                System.out.println("Invalid rate. Please enter a valid percentage (0 < rate < 100).");
                 System.out.println("\nPlease enter interest rule details in <Date YYYYMMdd> <RuleId> <Rate in %> format");
                 System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
-            // Attempt to add interest rule
-            if (bankingSystem.addInterestRule(ruleId, date, rate)) {
+            // Process the valid interest rule
+            if (bankingSystem.addInterestRule(date, ruleId, rate)) {
                 System.out.println("Interest rule added successfully.");
+                printInterestRules(bankingSystem.getInterestRules());
             } else {
                 System.out.println("Duplicate interest rule found. RuleId with the same rate already exists.");
+                printInterestRules(bankingSystem.getInterestRules());
             }
+
+            System.out.println("\nIs there anything else you'd like to do?");
+            printOptionMenu();
+            return;
         }
     }
 
+
+    private static void printInterestRules(List<InterestRule> interestRules) {
+        System.out.println("\nInterest rules:");
+        System.out.println("| Date     | RuleId | Rate (%) |");
+        for (InterestRule rule : interestRules) {
+            System.out.printf("| %-8s | %-6s | %6.2f |\n",
+                    rule.getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                    rule.getRuleId(),
+                    rule.getRate());
+        }
+    }
     private static void handlePrintStatement(BankingSystem bankingSystem, Scanner scanner) {
         System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
         System.out.println("(or enter blank to go back to the main menu):");

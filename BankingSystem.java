@@ -7,10 +7,13 @@ public class BankingSystem {
     private final Set<String> interestRuleSet = new HashSet<>();
     private final Map<String, Integer> transactionCounter;
 
+    private final Map<String, Double> ruleIdToRate; // RuleID -> Rate mapping
+
     public BankingSystem() {
         accounts = new HashMap<>();
         interestRules = new ArrayList<>();
         transactionCounter = new HashMap<>();
+        ruleIdToRate = new HashMap<>();
     }
 
     public boolean addTransaction(String accountId, String date, String type, double amount) {
@@ -27,12 +30,22 @@ public class BankingSystem {
         return String.format("%s-%02d", date, counter);
     }
 
-    public boolean addInterestRule(String ruleId, LocalDate date, double rate) {
-        String key = ruleId + "-" + rate;
-        if (interestRuleSet.contains(key)) {
-            return false; // Duplicate entry
+    public boolean addInterestRule(LocalDate date, String ruleId, double rate) {
+        // If the RuleID already exists but has a different rate, reject it.
+        if (ruleIdToRate.containsKey(ruleId) && ruleIdToRate.get(ruleId) != rate) {
+            return false;
         }
-        interestRuleSet.add(key);
+
+        // If the same RuleID exists with the same rate on the same date, reject it.
+        for (InterestRule rule : interestRules) {
+            if (rule.getDate().equals(date) && rule.getRuleId().equals(ruleId)) {
+                return false;
+            }
+        }
+
+        // Store the RuleID and its rate if not already stored
+        ruleIdToRate.put(ruleId, rate);
+        interestRules.add(new InterestRule(date, ruleId, rate));
         return true;
     }
 

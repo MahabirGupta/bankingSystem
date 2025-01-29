@@ -14,11 +14,24 @@ public class BankingSystemTest {
         assertTrue(bankingSystem.addTransaction("AC001", "20230101", "W", 50));
     }
 
-    @Test
-    void testInterestRules() {
-        BankingSystem bankingSystem = new BankingSystem();
-        bankingSystem.addInterestRule("RULE01", LocalDate.of(2023, 1, 1), 1.95);
-        bankingSystem.addInterestRule("RULE02", LocalDate.of(2023, 5, 20), 1.90);
-        assertEquals(2, bankingSystem.getInterestRules().size());
-    }
+@Test
+void testInterestRules() {
+    BankingSystem bankingSystem = new BankingSystem();
+
+    // Allowed: Different dates with the same RuleID and rate
+    assertTrue(bankingSystem.addInterestRule(LocalDate.of(2023, 1, 1), "RULE01", 1.95));
+    assertTrue(bankingSystem.addInterestRule(LocalDate.of(2023, 1, 2), "RULE01", 1.95));
+
+    // Allowed: Different RuleID on the same date
+    assertTrue(bankingSystem.addInterestRule(LocalDate.of(2023, 1, 1), "RULE02", 2.00));
+
+    // Not allowed: Same RuleID on the same date with different rate
+    assertFalse(bankingSystem.addInterestRule(LocalDate.of(2023, 1, 1), "RULE01", 2.00));
+
+    // Not allowed: Same RuleID on the same date with same rate
+    assertFalse(bankingSystem.addInterestRule(LocalDate.of(2023, 1, 1), "RULE01", 1.95));
+
+    // Check that only 3 rules were successfully added
+    assertEquals(3, bankingSystem.getInterestRules().size());
+}
 }
