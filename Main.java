@@ -1,4 +1,5 @@
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -108,7 +109,9 @@ public class Main {
             // Process transaction
             if (bankingSystem.addTransaction(accountId, dateStr, type, amount)) {
                 System.out.println("Transaction added successfully.");
-                printStatement(bankingSystem.getAccount(accountId));
+                YearMonth currentMonth = YearMonth.now();
+                printStatement(bankingSystem.getAccount(accountId), currentMonth);
+//                printStatement(bankingSystem.getAccount(accountId));
                 System.out.println("\nIs there anything else you'd like to do?");
                 printOptionMenu();
                 return;
@@ -206,9 +209,13 @@ public class Main {
     private static void handlePrintStatement(BankingSystem bankingSystem, Scanner scanner) {
         System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
         System.out.println("(or enter blank to go back to the main menu):");
+
+        DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyyMM");
+
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
+
             if (input.isEmpty()) {
                 System.out.println("\nIs there anything else you'd like to do?");
                 printOptionMenu();
@@ -224,26 +231,62 @@ public class Main {
             }
 
             String accountId = parts[0];
-            BankAccount account = bankingSystem.getAccount(accountId);
+            String yearMonthStr = parts[1];
 
-            if (account == null) {
-                System.out.println("Account not found.");
+            // Validate YearMonth format
+            if (yearMonthStr.length() != 6) {
+                System.out.println("Invalid date format. Please use YYYYMM.");
+                System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
+                System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
-            printStatement(account);
-            System.out.println("\nIs there anything else you'd like to do?");
-            printOptionMenu();
-            return;
+            try {
+                // Parse to ensure it's a valid YYYYMM format
+                YearMonth yearMonth = YearMonth.parse(yearMonthStr, yearMonthFormatter);
+
+                // Validate if account exists
+                BankAccount account = bankingSystem.getAccount(accountId);
+                if (account == null) {
+                    System.out.println("Account not found.");
+                    break;  // Instead of continuing, break out of the loop to return to the options menu
+                }
+
+                // Print statement
+                printStatement(account, yearMonth);
+                System.out.println("\nIs there anything else you'd like to do?");
+                printOptionMenu();
+                return;
+
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please use YYYYMM.");
+                System.out.println("\nPlease enter account and month to generate the statement <Account> <Year><Month>");
+                System.out.println("(or enter blank to go back to the main menu):");
+            }
+        }
+        // Ensure the option menu is displayed when the account is not found
+        System.out.println("\nIs there anything else you'd like to do?");
+        printOptionMenu();
+    }
+
+
+    private static void printStatement(BankAccount account, YearMonth yearMonth) {
+        System.out.println("\nAccount: " + account.getAccountId());
+        System.out.println("| Date     | Txn Id      | Type | Amount |");
+
+        boolean hasTransactions = false;
+        for (Transaction txn : account.getTransactions()) {
+            LocalDate txnDate = LocalDate.parse(txn.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+            if (YearMonth.from(txnDate).equals(yearMonth)) {
+                hasTransactions = true;
+                System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
+                        txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount());
+            }
+        }
+
+        if (!hasTransactions) {
+            System.out.println("No transactions found for the given month.");
         }
     }
 
-    private static void printStatement(BankAccount account) {
-        System.out.println("\nAccount: " + account.getAccountId());
-        System.out.println("| Date     | Txn Id      | Type | Amount |");
-        for (Transaction txn : account.getTransactions()) {
-            System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
-                    txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount());
-        }
-    }
 }
