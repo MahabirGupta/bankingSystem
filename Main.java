@@ -129,8 +129,11 @@ public class Main {
     }
 
     private static void handleInterestRuleInput(BankingSystem bankingSystem, Scanner scanner) {
-        System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+        System.out.println("\nPlease enter interest rule details in <Date YYYYMMdd> <RuleId> <Rate in %> format");
         System.out.println("(or enter blank to go back to the main menu):");
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine().trim();
@@ -139,31 +142,42 @@ public class Main {
             String[] parts = input.split("\\s+");
             if (parts.length != 3) {
                 System.out.println("Invalid input. Try again.");
-                System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+                System.out.println("\nPlease enter interest rule details in <Date YYYYMMdd> <RuleId> <Rate in %> format");
                 System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
+            String dateStr = parts[0];
             String ruleId = parts[1];
             double rate;
+
+            // Validate date format
+            LocalDate date;
+            try {
+                date = LocalDate.parse(dateStr, dateFormatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please use YYYYMMdd.");
+                System.out.println("\nPlease enter interest rule details in <Date YYYYMMdd> <RuleId> <Rate in %> format");
+                System.out.println("(or enter blank to go back to the main menu):");
+                continue;
+            }
+
+            // Validate interest rate
             try {
                 rate = Double.parseDouble(parts[2]);
                 if (rate <= 0 || rate >= 100) throw new NumberFormatException();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid rate. Try again.");
-                System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
+                System.out.println("\nPlease enter interest rule details in <Date YYYYMMdd> <RuleId> <Rate in %> format");
                 System.out.println("(or enter blank to go back to the main menu):");
                 continue;
             }
 
-            try {
-                LocalDate date = LocalDate.parse(parts[0]);
-                bankingSystem.addInterestRule(ruleId, date, rate);
+            // Attempt to add interest rule
+            if (bankingSystem.addInterestRule(ruleId, date, rate)) {
                 System.out.println("Interest rule added successfully.");
-            } catch (Exception e) {
-                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
-                System.out.println("\nPlease enter interest rule details in <Date YYYY-MM-DD> <RuleId> <Rate in %> format");
-                System.out.println("(or enter blank to go back to the main menu):");
+            } else {
+                System.out.println("Duplicate interest rule found. RuleId with the same rate already exists.");
             }
         }
     }

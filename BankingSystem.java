@@ -4,6 +4,7 @@ import java.util.*;
 public class BankingSystem {
     private final Map<String, BankAccount> accounts;
     private final List<InterestRule> interestRules;
+    private final Set<String> interestRuleSet = new HashSet<>();
     private final Map<String, Integer> transactionCounter;
 
     public BankingSystem() {
@@ -26,8 +27,13 @@ public class BankingSystem {
         return String.format("%s-%02d", date, counter);
     }
 
-    public void addInterestRule(String ruleId, LocalDate date, double rate) {
-        interestRules.add(new InterestRule(date, ruleId, rate));
+    public boolean addInterestRule(String ruleId, LocalDate date, double rate) {
+        String key = ruleId + "-" + rate;
+        if (interestRuleSet.contains(key)) {
+            return false; // Duplicate entry
+        }
+        interestRuleSet.add(key);
+        return true;
     }
 
     public BankAccount getAccount(String accountId) {
