@@ -110,7 +110,9 @@ public class Main {
             if (bankingSystem.addTransaction(accountId, dateStr, type, amount)) {
                 System.out.println("Transaction added successfully.");
                 YearMonth currentMonth = YearMonth.now();
-                printStatement(bankingSystem.getAccount(accountId), currentMonth);
+//                printStatement(bankingSystem.getAccount(accountId), currentMonth);
+                printStatement(bankingSystem.getAccount(accountId), currentMonth, false);
+
 //                printStatement(bankingSystem.getAccount(accountId));
                 System.out.println("\nIs there anything else you'd like to do?");
                 printOptionMenu();
@@ -253,7 +255,9 @@ public class Main {
                 }
 
                 // Print statement
-                printStatement(account, yearMonth);
+//                printStatement(account, yearMonth);
+                printStatement(account, yearMonth, true);
+
                 System.out.println("\nIs there anything else you'd like to do?");
                 printOptionMenu();
                 return;
@@ -270,17 +274,28 @@ public class Main {
     }
 
 
-    private static void printStatement(BankAccount account, YearMonth yearMonth) {
+    private static void printStatement(BankAccount account, YearMonth yearMonth, boolean showBalance) {
         System.out.println("\nAccount: " + account.getAccountId());
-        System.out.println("| Date     | Txn Id      | Type | Amount |");
+        if (showBalance) {
+            System.out.println("| Date     | Txn Id      | Type | Amount | Balance |");
+        } else {
+            System.out.println("| Date     | Txn Id      | Type | Amount |");
+        }
 
+        double balance = 0;
         boolean hasTransactions = false;
         for (Transaction txn : account.getTransactions()) {
             LocalDate txnDate = LocalDate.parse(txn.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd"));
             if (YearMonth.from(txnDate).equals(yearMonth)) {
                 hasTransactions = true;
-                System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
-                        txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount());
+                if (showBalance) {
+                    balance = txn.getType().equals("D") ? balance + txn.getAmount() : balance - txn.getAmount();
+                    System.out.printf("| %-8s | %-10s | %-4s | %6.2f | %7.2f |\n",
+                            txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount(), balance);
+                } else {
+                    System.out.printf("| %-8s | %-10s | %-4s | %6.2f |\n",
+                            txn.getDate(), txn.getTxnId(), txn.getType(), txn.getAmount());
+                }
             }
         }
 
@@ -288,5 +303,6 @@ public class Main {
             System.out.println("No transactions found for the given month.");
         }
     }
+
 
 }
