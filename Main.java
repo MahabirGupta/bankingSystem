@@ -109,9 +109,14 @@ public class Main {
             // Process transaction
             if (bankingSystem.addTransaction(accountId, dateStr, type, amount)) {
                 System.out.println("Transaction added successfully.");
-                YearMonth currentMonth = YearMonth.now();
-//                printStatement(bankingSystem.getAccount(accountId), currentMonth);
-                printStatement(bankingSystem.getAccount(accountId), currentMonth, false);
+
+                // **Fix: Print the statement for the correct transaction month**
+                YearMonth transactionMonth = YearMonth.from(date);
+                printStatement(bankingSystem.getAccount(accountId), transactionMonth, false);
+
+//                YearMonth currentMonth = YearMonth.now();
+////                printStatement(bankingSystem.getAccount(accountId), currentMonth);
+//                printStatement(bankingSystem.getAccount(accountId), currentMonth, false);
 
 //                printStatement(bankingSystem.getAccount(accountId));
                 System.out.println("\nIs there anything else you'd like to do?");
